@@ -5,7 +5,8 @@
   "type": "library",
   "require": {
     "php": "^8.2",
-    "spatie/laravel-package-tools": "^1.16"
+    "spatie/laravel-package-tools": "^1.16",
+    "ext-ldap": "*"
   },
   "require-dev": {
     "orchestra/testbench": "^7.30",
@@ -31,7 +32,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "CornellCustomDev\\LaravelLdap\\LaravelLdapServiceProvider"
+        "CornellCustomDev\\LaravelLdap\\LdapServiceProvider"
       ]
     }
   },

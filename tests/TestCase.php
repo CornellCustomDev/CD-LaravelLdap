@@ -2,7 +2,7 @@
 
 namespace CornellCustomDev\LaravelLdap\Tests;
 
-use CornellCustomDev\LaravelLdap\LaravelLdapServiceProvider;
+use CornellCustomDev\LaravelLdap\LdapServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
@@ -15,7 +15,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function getPackageProviders($app): array
     {
         return [
-            LaravelLdapServiceProvider::class,
+            LdapServiceProvider::class,
         ];
     }
 
