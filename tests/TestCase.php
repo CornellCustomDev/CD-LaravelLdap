@@ -3,8 +3,9 @@
 namespace CornellCustomDev\LaravelLdap\Tests;
 
 use CornellCustomDev\LaravelLdap\LdapServiceProvider;
+use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
-class TestCase extends \Orchestra\Testbench\TestCase
+class TestCase extends OrchestraTestCase
 {
     public function setUp(): void
     {

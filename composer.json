@@ -5,13 +5,12 @@
   "type": "library",
   "require": {
     "php": "^8.2",
-    "spatie/laravel-package-tools": "^1.16",
-    "ext-ldap": "*"
+    "ext-ldap": "*",
+    "spatie/laravel-package-tools": "^1.16"
   },
   "require-dev": {
-    "orchestra/testbench": "^7.30",
-    "phpunit/phpunit": "^9.6",
-    "laravel/pint": "^1.12"
+    "orchestra/testbench": "^8.10",
+    "phpunit/phpunit": "^10.3"
   },
   "autoload": {
     "psr-4": {
@@ -36,6 +35,5 @@
       ]
     }
   },
-  "minimum-stability": "dev",
   "prefer-stable": true
 }
