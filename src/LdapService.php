@@ -9,12 +9,11 @@ use LDAP\Connection;
 
 class LdapService
 {
+    public const LDAP_CACHE_SECONDS = 300;
+
     public function __construct(
-        private readonly string $ldap_user,
-        private readonly string $ldap_pass,
-        private readonly string $ldap_server,
-        private readonly string $ldap_base_dn,
-        private readonly int $cache_seconds,
+        private readonly Ldap $ldap,
+        private readonly int $cache_seconds = self::LDAP_CACHE_SECONDS,
     ) {}
 
     /**
@@ -55,12 +54,9 @@ class LdapService
     public function find(string $netid, ?bool $debug = false): ?LdapData
     {
         $connection = $this->makeConnection();
-        if (!$connection) {
-            return null;
-        }
 
         try {
-            $response = $this->search($connection, $netid);
+            $response = $this->ldap->getFirst($connection, "uid=$netid");
             if ($debug) {
                 dump(json_encode($response));
             }
@@ -72,54 +68,6 @@ class LdapService
 
         // Load the data into an immutable object.
         return LdapData::make($data);
-    }
-
-    /**
-     * Make a connection to the LDAP server.
-     *
-     * @throws LdapServiceException
-     */
-    private function makeConnection(): ?Connection
-    {
-        $ldap = ldap_connect($this->ldap_server);
-        if (!$ldap) {
-            // @TODO: Throw a configuration exception
-            return null;
-        }
-
-//        ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-//        ldap_set_option($connection, LDAP_OPT_REFERRALS, 0);
-
-        $result = ldap_bind_ext($ldap, "uid=$this->ldap_user", $this->ldap_pass);
-        if (!$result) {
-            // @TODO: Throw a specific error
-            return null;
-        }
-
-        if (!ldap_parse_result($ldap, $result, $errcode, $matcheddn, $errmsg, $referrals, $controls)) {
-            // $this->logError("Error response from ldap_bind: " . $e->getMessage());
-            throw new LdapServiceException($errmsg);
-        }
-
-        return $ldap;
-    }
-
-    /**
-     * Search for a user in the LDAP directory, returning the attributes for the first entry.
-     */
-    private function search(Connection $ldap, string $netid): ?array
-    {
-        $result = ldap_search($ldap, $this->ldap_base_dn, "uid=$netid");
-        if (!$result) {
-            return null;
-        }
-
-        $result_entry = ldap_first_entry($ldap, $result);
-        if (!$result_entry) {
-            return null;
-        }
-
-        return ldap_get_attributes($ldap, $result_entry);
     }
 
     /**
@@ -147,4 +95,20 @@ class LdapService
 
         return $data;
     }
+
+    /**
+     * @throws LdapServiceException
+     */
+    private function makeConnection(): false|Connection
+    {
+        $connection = $this->ldap->connect();
+        if (!$connection) {
+            throw new LdapServiceException('Could not connect to LDAP server.');
+        }
+
+        $this->ldap->bind($connection);
+
+        return $connection;
+    }
+
 }

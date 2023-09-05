@@ -18,4 +18,20 @@ class LdapServiceProvider extends PackageServiceProvider
                     ->publishConfigFile();
             });
     }
+
+    public function boot(): void
+    {
+        $this->app->singleton(
+            abstract: LdapService::class,
+            concrete: fn() => new LdapService(
+                ldap: new Ldap(
+                    ldap_user:     strval(config('ldap.user') ?: ''),
+                    ldap_pass:     strval(config('ldap.pass') ?: ''),
+                    ldap_server:   strval(config('ldap.server') ?: ''),
+                    ldap_base_dn:  strval(config('ldap.base_dn') ?: ''),
+                ),
+                cache_seconds: intval(config('ldap.cache_seconds')),
+            ),
+        );
+    }
 }
