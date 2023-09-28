@@ -18,7 +18,8 @@ class Ldap
         private readonly string $ldap_pass,
         private readonly string $ldap_server,
         private readonly string $ldap_base_dn,
-    ) {}
+    ) {
+    }
 
     /**
      * Search for a user in the LDAP directory, returning the attributes for the first entry.
@@ -26,12 +27,12 @@ class Ldap
     public function getFirst($connection, $filter): ?array
     {
         $result = $this->search($connection, $this->ldap_base_dn, $filter);
-        if (!$result) {
+        if (! $result) {
             return null;
         }
 
         $result_entry = $this->first_entry($connection, $result);
-        if (!$result_entry) {
+        if (! $result_entry) {
             return null;
         }
 

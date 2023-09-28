@@ -130,8 +130,7 @@ class LdapServiceTest extends TestCase
         $bind = true,
         $parse_result = true,
         $getFirst = null,
-    ): Ldap|MockObject
-    {
+    ): Ldap|MockObject {
         $ldap = $this->createMock(Ldap::class);
         $ldap->method('connect')->willReturn($connection);
         $ldap->method('bind')->willReturn($bind);
@@ -140,5 +139,4 @@ class LdapServiceTest extends TestCase
 
         return $ldap;
     }
-
 }

@@ -26,13 +26,13 @@ abstract class TestCase extends OrchestraTestCase
         // perform environment setup
     }
 
-    function fixture(string $name, bool $json = false): array|string
+    public function fixture(string $name, bool $json = false): array|string
     {
         $contents = file_get_contents(
-            filename: __DIR__ . "/Fixtures/$name",
+            filename: __DIR__."/Fixtures/$name",
         );
 
-        if (!$contents) {
+        if (! $contents) {
             throw new InvalidArgumentException(
                 message: "Cannot find fixture: tests/Fixtures/$name",
             );

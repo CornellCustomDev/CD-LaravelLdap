@@ -14,7 +14,8 @@ class LdapService
     public function __construct(
         private readonly Ldap $ldap,
         private readonly int $cache_seconds = self::LDAP_CACHE_SECONDS,
-    ) {}
+    ) {
+    }
 
     /**
      * Retrieve the instance of LdapService from the service container.
@@ -33,17 +34,17 @@ class LdapService
     public static function get(?string $netid, bool $bust_cache = false): ?LdapData
     {
         if (empty($netid)) {
-            throw new InvalidArgumentException(LdapService::class . '::get requires netid');
+            throw new InvalidArgumentException(LdapService::class.'::get requires netid');
         }
 
-        $cache_key = LdapService::class . '::get_' . $netid;
+        $cache_key = LdapService::class.'::get_'.$netid;
         if ($bust_cache) {
             Cache::forget($cache_key);
         }
 
         $ldap_service = LdapService::make();
 
-        return Cache::remember($cache_key, now()->addSeconds($ldap_service->cache_seconds), fn() => $ldap_service->find($netid));
+        return Cache::remember($cache_key, now()->addSeconds($ldap_service->cache_seconds), fn () => $ldap_service->find($netid));
     }
 
     /**
@@ -60,7 +61,7 @@ class LdapService
             if ($debug) {
                 dump(json_encode($response));
             }
-            if (!$response) {
+            if (! $response) {
                 return null;
             }
             $data = self::parseResponse($response);
@@ -91,7 +92,7 @@ class LdapService
                 $parsed_value = $value;
             }
             // Only populate the field if we have data.
-            if (!empty($parsed_value)) {
+            if (! empty($parsed_value)) {
                 $data[$key] = $parsed_value;
             }
         }
@@ -105,12 +106,12 @@ class LdapService
     private function makeBindConnection(): bool|Connection
     {
         $connection = $this->ldap->connect();
-        if (!$connection) {
+        if (! $connection) {
             throw new LdapServiceException('Could not connect to LDAP server.');
         }
 
         $result = $this->ldap->bind($connection);
-        if (!$result) {
+        if (! $result) {
             throw new LdapServiceException('Could not bind to LDAP server.');
         }
 
@@ -121,5 +122,4 @@ class LdapService
 
         return $connection;
     }
-
 }

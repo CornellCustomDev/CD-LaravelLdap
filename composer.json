@@ -9,6 +9,7 @@
     "spatie/laravel-package-tools": "^1.16"
   },
   "require-dev": {
+    "laravel/pint": "^1.13",
     "orchestra/testbench": "^8.10",
     "phpunit/phpunit": "^10.3"
   },
