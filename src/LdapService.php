@@ -53,12 +53,15 @@ class LdapService
      */
     public function find(string $netid, ?bool $debug = false): ?LdapData
     {
-        $connection = $this->makeConnection();
+        $connection = $this->makeBindConnection();
 
         try {
             $response = $this->ldap->getFirst($connection, "uid=$netid");
             if ($debug) {
                 dump(json_encode($response));
+            }
+            if (!$response) {
+                return null;
             }
             $data = self::parseResponse($response);
         } catch (Exception $e) {
@@ -73,10 +76,10 @@ class LdapService
     /**
      * Parse a response from ldap_search into a simple array.
      */
-    public static function parseResponse(array $response): array
+    public static function parseResponse(?array $response = []): array
     {
+        unset($response['dn']);
         $data = [];
-
         foreach ($response as $key => $value) {
             if (is_numeric($key) || $key == 'count') {
                 continue;
@@ -99,14 +102,22 @@ class LdapService
     /**
      * @throws LdapServiceException
      */
-    private function makeConnection(): false|Connection
+    private function makeBindConnection(): bool|Connection
     {
         $connection = $this->ldap->connect();
         if (!$connection) {
             throw new LdapServiceException('Could not connect to LDAP server.');
         }
 
-        $this->ldap->bind($connection);
+        $result = $this->ldap->bind($connection);
+        if (!$result) {
+            throw new LdapServiceException('Could not bind to LDAP server.');
+        }
+
+        $parsed_result = $this->ldap->parse_result($connection, $result);
+        if ($parsed_result !== true) {
+            throw new LdapServiceException("Error response from ldap_bind: $parsed_result");
+        }
 
         return $connection;
     }

@@ -3,9 +3,10 @@
 namespace CornellCustomDev\LaravelLdap\Tests;
 
 use CornellCustomDev\LaravelLdap\LdapServiceProvider;
+use InvalidArgumentException;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
-class TestCase extends OrchestraTestCase
+abstract class TestCase extends OrchestraTestCase
 {
     public function setUp(): void
     {
@@ -23,5 +24,23 @@ class TestCase extends OrchestraTestCase
     protected function getEnvironmentSetUp($app)
     {
         // perform environment setup
+    }
+
+    function fixture(string $name, bool $json = false): array|string
+    {
+        $contents = file_get_contents(
+            filename: __DIR__ . "/Fixtures/$name",
+        );
+
+        if (!$contents) {
+            throw new InvalidArgumentException(
+                message: "Cannot find fixture: tests/Fixtures/$name",
+            );
+        }
+
+        return $json ? json_decode(
+            json: $contents,
+            associative: true,
+        ) : $contents;
     }
 }

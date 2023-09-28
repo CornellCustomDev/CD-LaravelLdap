@@ -8,6 +8,7 @@ use CornellCustomDev\LaravelLdap\LdapServiceException;
 use CornellCustomDev\LaravelLdap\Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class LdapServiceTest extends TestCase
 {
@@ -26,13 +27,16 @@ class LdapServiceTest extends TestCase
         $this->assertInstanceOf(LdapService::class, $service);
     }
 
-    public function testCanResolveServiceFromContainer()
+    public function testMakesSingletonService()
     {
-        $service = resolve(LdapService::class);
+        $service = LdapService::make();
         $this->assertInstanceOf(LdapService::class, $service);
+
+        // Confirm it is a singleton
+        $this->assertEquals($service, app(LdapService::class));
     }
 
-    public function testRequiresNetid()
+    public function testGetRequiresNetid()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('get requires netid');
@@ -40,16 +44,101 @@ class LdapServiceTest extends TestCase
         LdapService::get(null);
     }
 
-    public function testWillCatchFailedConnection()
+    public function testFindWillCatchFailedConnection()
     {
-        $this->expectException(LdapServiceException::class);
-
-        // Create a mock Ldap object that will return false for connect()
-        $ldap = $this->createMock(Ldap::class);
-        $ldap->method('connect')->willReturn(false);
-
+        $ldap = $this->mockLdap(connection: false);
         $service = new LdapService($ldap);
+
+        $this->expectException(LdapServiceException::class);
+        $this->expectExceptionMessage('Could not connect to LDAP server.');
 
         $service->find('netid');
     }
+
+    public function testFindWillCatchFailedBind()
+    {
+        $ldap = $this->mockLdap(bind: false);
+        $service = new LdapService($ldap);
+
+        $this->expectException(LdapServiceException::class);
+        $this->expectExceptionMessage('Could not bind to LDAP server.');
+
+        $service->find('netid');
+    }
+
+    public function testFindWillCatchErrorResult()
+    {
+        $error_message = 'TEST_ERROR';
+        $ldap = $this->mockLdap(parse_result: $error_message);
+        $service = new LdapService($ldap);
+
+        $this->expectException(LdapServiceException::class);
+        $this->expectExceptionMessage("Error response from ldap_bind: $error_message");
+
+        $service->find('netid');
+    }
+
+    public function testFindWillCatchFailedSearch()
+    {
+        $error_message = 'TEST_ERROR';
+        $ldap = $this->mockLdap();
+        $ldap->method('getFirst')->willThrowException(new \Exception($error_message));
+        $service = new LdapService($ldap);
+
+        $this->expectException(LdapServiceException::class);
+        $this->expectExceptionMessage($error_message);
+
+        $service->find('netid');
+    }
+
+    public function testFindWillReturnNullIfNoResults()
+    {
+        $ldap = $this->mockLdap();
+        $service = new LdapService($ldap);
+
+        $result = $service->find('netid');
+
+        $this->assertNull($result);
+    }
+
+    public function testFindWillReturnLdapData()
+    {
+        $ldapResponse = $this->fixture('ldap_search.json', json: true);
+
+        $ldap = $this->mockLdap(getFirst: $ldapResponse);
+        $service = new LdapService($ldap);
+
+        $result = $service->find('netid');
+
+        $this->assertEquals('tt999', $result->netid);
+        $this->assertEquals('9999999', $result->emplid);
+        $this->assertEquals('Testy', $result->first_name);
+        $this->assertEquals('Testerson', $result->last_name);
+        $this->assertEquals('Testy Testerson', $result->display_name);
+        $this->assertEquals('testerson@cornell.edu', $result->email);
+        $this->assertEquals('607/2551111', $result->campus_phone);
+        $this->assertEquals('CIO - CIT Enterprise Services', $result->dept_name);
+        $this->assertEquals('Web Developer', $result->working_title);
+        $this->assertEquals('staff', $result->primary_affiliation);
+        $this->assertEquals(['staff'], $result->affiliations);
+        $this->assertEquals(null, $result->previous_netids);
+        $this->assertEquals(null, $result->previous_emplids);
+    }
+
+    private function mockLdap(
+        $connection = true,
+        $bind = true,
+        $parse_result = true,
+        $getFirst = null,
+    ): Ldap|MockObject
+    {
+        $ldap = $this->createMock(Ldap::class);
+        $ldap->method('connect')->willReturn($connection);
+        $ldap->method('bind')->willReturn($bind);
+        $ldap->method('parse_result')->willReturn($parse_result);
+        $ldap->method('getFirst')->willReturn($getFirst);
+
+        return $ldap;
+    }
+
 }

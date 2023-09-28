@@ -1,12 +1,20 @@
 # CD-LaravelLdap
 
-A Laravel package for connecting to Cornell LDAP resources
+A Laravel package for connecting to Cornell LDAP resources.
+
+This package exists in order to provide a robust, well-tested LDAP connection service with a standard data structure that is well-defined and can be extended over time.
 
 ## Installation
 The package can be installed via composer once an initial release has been added to packagist:
 
 ```bash
 composer require cornell-custom-dev/laravel-ldap
+```
+
+After running composer require, the config file should be published:
+
+```bash
+php artisan vendor:publish --tag=laravel-ldap-config
 ```
 
 Environment variables that define the LDAP user and password should be set in the environment. See `/resources/stubs/.env.ldap.stub`.

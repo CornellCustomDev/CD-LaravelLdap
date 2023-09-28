@@ -7,7 +7,9 @@ use LDAP\Result;
 use LDAP\ResultEntry;
 
 /**
- * Provides wrappers for standard LDAP PHP extension functions that we use in the LdapService class.
+ * Wrappers for standard LDAP PHP extension functions used from the LdapService class.
+ *
+ * This class allows us to provide some simplifications and testability for the LdapService class.
  */
 class Ldap
 {
@@ -36,35 +38,22 @@ class Ldap
         return $this->get_attributes($connection, $result_entry);
     }
 
-    public function connect(): false|Connection
+    public function connect(): bool|Connection
     {
         return ldap_connect($this->ldap_server);
     }
 
-    /**
-     * @throws LdapServiceException
-     */
-    public function bind($ldap): false|Result
+    public function bind($ldap): bool|Result
     {
-        $result = ldap_bind_ext($ldap, "uid=$this->ldap_user", $this->ldap_pass);
-        if (!$result) {
-            throw new LdapServiceException('Could not bind to LDAP server.');
-        }
-
-        $parsed_result = ldap_parse_result($ldap, $result, $errcode, $matcheddn, $errmsg, $referrals, $controls);
-        if ($parsed_result !== true) {
-            throw new LdapServiceException('Error response from ldap_bind: ' . $parsed_result);
-        }
-
-        return $result;
+        return ldap_bind_ext($ldap, "uid=$this->ldap_user", $this->ldap_pass);
     }
 
-    public function search($ldap, string $base_dn, string $filter): array|false|Result
+    public function search($ldap, string $base_dn, string $filter): array|bool|Result
     {
         return ldap_search($ldap, $base_dn, $filter);
     }
 
-    public function first_entry($ldap, $result): false|ResultEntry
+    public function first_entry($ldap, $result): bool|ResultEntry
     {
         return ldap_first_entry($ldap, $result);
     }
@@ -72,5 +61,10 @@ class Ldap
     public function get_attributes($ldap, $entry): array
     {
         return ldap_get_attributes($ldap, $entry);
+    }
+
+    public function parse_result($ldap, $result): bool|string
+    {
+        return ldap_parse_result($ldap, $result, $error_code, $matched_dn, $error_message) ?: $error_message;
     }
 }
