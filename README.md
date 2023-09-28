@@ -24,7 +24,7 @@ Environment variables that define the LDAP user and password should be set in th
 The service is registered automatically in the Laravel dependency injection container. This means that Laravel will provide the service simply by referencing it as a typed argument for a method:
 
 ```php
-public function getLdapName($netid, LdapService $ldap): string
+public function getLdapDisplayName($netid, LdapService $ldap): string
 {
     $ldapData = $ldap->get($netid);
     
@@ -32,8 +32,20 @@ public function getLdapName($netid, LdapService $ldap): string
         return null;
     }
     
-    return $ldapData->first_name . ' ' $ldapData->last_name
+    return $ldapData->display_name
 }
 ```
 
-The method `LdapService::get($netid)` caches a query for 300 seconds by default, so multiple calls to the service for the same `$netid` value are not expensive.
+Alternatively it can be called statically and the service will be resolved from the container:
+
+```php
+$ldapData = LdapService::get($netid);
+```
+
+The `LdapService::get()` method caches the query for 300 seconds by default, so multiple calls to the service for the same `$netid` value are not expensive.
+
+Documentation of all currently parsed fields can be found in `src/LdapData.php`.
+
+## Contributing
+
+Anyone on the Custom Development team should be welcome and able to contribute. See [CONTRIBUTING](CONTRIBUTING.md) for details on how be involved and provide quality contributions.
