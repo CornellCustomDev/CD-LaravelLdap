@@ -1,8 +1,8 @@
 <?php
 
-namespace CornellCustomDev\LaravelLdap\Tests;
+namespace CornellCustomDev\LaravelStarterKit\Ldap\Tests;
 
-use CornellCustomDev\LaravelLdap\LdapServiceProvider;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapDataServiceProvider;
 use InvalidArgumentException;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
@@ -17,7 +17,7 @@ abstract class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app): array
     {
         return [
-            LdapServiceProvider::class,
+            LdapDataServiceProvider::class,
         ];
     }
 

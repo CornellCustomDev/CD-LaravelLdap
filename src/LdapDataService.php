@@ -1,13 +1,13 @@
 <?php
 
-namespace CornellCustomDev\LaravelLdap;
+namespace CornellCustomDev\LaravelStarterKit\Ldap;
 
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use LDAP\Connection;
 
-class LdapService
+class LdapDataService
 {
     public const LDAP_CACHE_SECONDS = 300;
 
@@ -17,31 +17,31 @@ class LdapService
     ) {}
 
     /**
-     * Retrieve the instance of LdapService from the service container.
+     * Retrieve the instance of LdapDataService from the service container.
      */
-    public static function make(): LdapService
+    public static function make(): LdapDataService
     {
-        return app(LdapService::class);
+        return app(LdapDataService::class);
     }
 
     /**
-     * Get a cached result for LdapService::make()->find($netid).
+     * Get a cached result for LdapDataService::make()->find($netid).
      *
      * @throws InvalidArgumentException
-     * @throws LdapServiceException
+     * @throws LdapDataException
      */
     public static function get(?string $netid, bool $bust_cache = false): ?LdapData
     {
         if (empty($netid)) {
-            throw new InvalidArgumentException(LdapService::class.'::get requires netid');
+            throw new InvalidArgumentException(LdapDataService::class.'::get requires netid');
         }
 
-        $cache_key = LdapService::class.'::get_'.$netid;
+        $cache_key = LdapDataService::class.'::get_'.$netid;
         if ($bust_cache) {
             Cache::forget($cache_key);
         }
 
-        $ldap_service = LdapService::make();
+        $ldap_service = LdapDataService::make();
 
         return Cache::remember($cache_key, now()->addSeconds($ldap_service->cache_seconds), fn () => $ldap_service->find($netid));
     }
@@ -49,7 +49,7 @@ class LdapService
     /**
      * Find a user in the LDAP directory, returning an LdapData object for the first entry found.
      *
-     * @throws LdapServiceException
+     * @throws LdapDataException
      */
     public function find(string $netid, ?bool $debug = false): ?LdapData
     {
@@ -66,7 +66,7 @@ class LdapService
             $data = self::parseResponse($response);
         } catch (Exception $e) {
             // $this->logError("Error in ldap_search for $netid: " . $e->getMessage());
-            throw new LdapServiceException($e->getMessage());
+            throw new LdapDataException($e->getMessage());
         }
 
         // Load the data into an immutable object.
@@ -100,23 +100,23 @@ class LdapService
     }
 
     /**
-     * @throws LdapServiceException
+     * @throws LdapDataException
      */
     private function makeBindConnection(): bool|Connection
     {
         $connection = $this->ldap->connect();
         if (! $connection) {
-            throw new LdapServiceException('Could not connect to LDAP server.');
+            throw new LdapDataException('Could not connect to LDAP server.');
         }
 
         $result = $this->ldap->bind($connection);
         if (! $result) {
-            throw new LdapServiceException('Could not bind to LDAP server.');
+            throw new LdapDataException('Could not bind to LDAP server.');
         }
 
         $parsed_result = $this->ldap->parse_result($connection, $result);
         if ($parsed_result !== true) {
-            throw new LdapServiceException("Error response from ldap_bind: $parsed_result");
+            throw new LdapDataException("Error response from ldap_bind: $parsed_result");
         }
 
         return $connection;

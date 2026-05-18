@@ -1,18 +1,18 @@
 <?php
 
-namespace CornellCustomDev\LaravelLdap;
+namespace CornellCustomDev\LaravelStarterKit\Ldap;
 
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class LdapServiceProvider extends PackageServiceProvider
+class LdapDataServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
         $package
             ->name('laravel-ldap')
-            ->publishesServiceProvider('LdapServiceProvider')
+            ->publishesServiceProvider('LdapDataServiceProvider')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
                     ->publishConfigFile();
@@ -22,8 +22,8 @@ class LdapServiceProvider extends PackageServiceProvider
     public function boot(): void
     {
         $this->app->singleton(
-            abstract: LdapService::class,
-            concrete: fn () => new LdapService(
+            abstract: LdapDataService::class,
+            concrete: fn () => new LdapDataService(
                 ldap: new Ldap(
                     ldap_user: strval(config('ldap.user') ?: ''),
                     ldap_pass: strval(config('ldap.pass') ?: ''),

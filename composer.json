@@ -16,12 +16,12 @@
     },
     "autoload": {
         "psr-4": {
-            "CornellCustomDev\\LaravelLdap\\": "src"
+            "CornellCustomDev\\LaravelStarterKit\\Ldap\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "CornellCustomDev\\LaravelLdap\\Tests\\": "tests"
+            "CornellCustomDev\\LaravelStarterKit\\Ldap\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -44,7 +44,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "CornellCustomDev\\LaravelLdap\\LdapServiceProvider"
+                "LdapDataServiceProvider"
             ]
         }
     },

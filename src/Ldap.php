@@ -1,15 +1,15 @@
 <?php
 
-namespace CornellCustomDev\LaravelLdap;
+namespace CornellCustomDev\LaravelStarterKit\Ldap;
 
 use LDAP\Connection;
 use LDAP\Result;
 use LDAP\ResultEntry;
 
 /**
- * Wrappers for standard LDAP PHP extension functions used from the LdapService class.
+ * Wrappers for standard LDAP PHP extension functions used from the LdapDataService class.
  *
- * This class allows us to provide some simplifications and testability for the LdapService class.
+ * This class allows us to provide some simplifications and testability for the LdapDataService class.
  */
 class Ldap
 {

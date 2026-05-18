@@ -1,11 +1,11 @@
 <?php
 
-namespace CornellCustomDev\LaravelLdap\Tests\Feature;
+namespace CornellCustomDev\LaravelStarterKit\Ldap\Tests\Feature;
 
-use CornellCustomDev\LaravelLdap\Ldap;
-use CornellCustomDev\LaravelLdap\LdapService;
-use CornellCustomDev\LaravelLdap\LdapServiceException;
-use CornellCustomDev\LaravelLdap\Tests\TestCase;
+use CornellCustomDev\LaravelStarterKit\Ldap\Ldap;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapDataService;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapDataException;
+use CornellCustomDev\LaravelStarterKit\Ldap\Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,19 +24,19 @@ class LdapServiceTest extends TestCase
             ldap_server: 'directory',
             ldap_base_dn: 'dn',
         );
-        $service = new LdapService($ldap, intval(null));
+        $service = new LdapDataService($ldap, intval(null));
 
-        $this->assertInstanceOf(LdapService::class, $service);
+        $this->assertInstanceOf(LdapDataService::class, $service);
     }
 
     #[Test]
     public function makes_singleton_service()
     {
-        $service = LdapService::make();
-        $this->assertInstanceOf(LdapService::class, $service);
+        $service = LdapDataService::make();
+        $this->assertInstanceOf(LdapDataService::class, $service);
 
         // Confirm it is a singleton
-        $this->assertEquals($service, app(LdapService::class));
+        $this->assertEquals($service, app(LdapDataService::class));
     }
 
     #[Test]
@@ -45,16 +45,16 @@ class LdapServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('get requires netid');
 
-        LdapService::get(null);
+        LdapDataService::get(null);
     }
 
     #[Test]
     public function find_will_catch_failed_connection()
     {
         $ldap = $this->mockLdap(connection: false);
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
-        $this->expectException(LdapServiceException::class);
+        $this->expectException(LdapDataException::class);
         $this->expectExceptionMessage('Could not connect to LDAP server.');
 
         $service->find('netid');
@@ -64,9 +64,9 @@ class LdapServiceTest extends TestCase
     public function find_will_catch_failed_bind()
     {
         $ldap = $this->mockLdap(bind: false);
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
-        $this->expectException(LdapServiceException::class);
+        $this->expectException(LdapDataException::class);
         $this->expectExceptionMessage('Could not bind to LDAP server.');
 
         $service->find('netid');
@@ -77,9 +77,9 @@ class LdapServiceTest extends TestCase
     {
         $error_message = 'TEST_ERROR';
         $ldap = $this->mockLdap(parse_result: $error_message);
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
-        $this->expectException(LdapServiceException::class);
+        $this->expectException(LdapDataException::class);
         $this->expectExceptionMessage("Error response from ldap_bind: $error_message");
 
         $service->find('netid');
@@ -91,9 +91,9 @@ class LdapServiceTest extends TestCase
         $error_message = 'TEST_ERROR';
         $ldap = $this->mockLdap();
         $ldap->method('getFirst')->willThrowException(new \Exception($error_message));
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
-        $this->expectException(LdapServiceException::class);
+        $this->expectException(LdapDataException::class);
         $this->expectExceptionMessage($error_message);
 
         $service->find('netid');
@@ -103,7 +103,7 @@ class LdapServiceTest extends TestCase
     public function find_will_return_null_if_no_results()
     {
         $ldap = $this->mockLdap();
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
         $result = $service->find('netid');
 
@@ -116,23 +116,23 @@ class LdapServiceTest extends TestCase
         $ldapResponse = $this->fixture('ldap_search.json', json: true);
 
         $ldap = $this->mockLdap(getFirst: $ldapResponse);
-        $service = new LdapService($ldap);
+        $service = new LdapDataService($ldap);
 
         $result = $service->find('netid');
 
-        $this->assertEquals('tt999', $result->netid);
+        $this->assertEquals('tt999', $result->id());
         $this->assertEquals('9999999', $result->emplid);
-        $this->assertEquals('Testy', $result->first_name);
-        $this->assertEquals('Testerson', $result->last_name);
-        $this->assertEquals('Testy Testerson', $result->display_name);
-        $this->assertEquals('testerson@cornell.edu', $result->email);
-        $this->assertEquals('607/2551111', $result->campus_phone);
-        $this->assertEquals('CIO - CIT Enterprise Services', $result->dept_name);
-        $this->assertEquals('Web Developer', $result->working_title);
-        $this->assertEquals('staff', $result->primary_affiliation);
+        $this->assertEquals('Testy', $result->firstName);
+        $this->assertEquals('Testerson', $result->lastName);
+        $this->assertEquals('Testy Testerson', $result->name());
+        $this->assertEquals('testerson@cornell.edu', $result->email());
+        $this->assertEquals('607/2551111', $result->campusPhone);
+        $this->assertEquals('CIO - CIT Enterprise Services', $result->deptName);
+        $this->assertEquals('Web Developer', $result->workingTitle);
+        $this->assertEquals('staff', $result->primaryAffiliation);
         $this->assertEquals(['staff'], $result->affiliations);
-        $this->assertEquals(null, $result->previous_netids);
-        $this->assertEquals(null, $result->previous_emplids);
+        $this->assertEquals(null, $result->previousNetids);
+        $this->assertEquals(null, $result->previousEmplids);
     }
 
     private function mockLdap(
