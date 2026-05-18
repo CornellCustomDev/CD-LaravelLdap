@@ -18,8 +18,7 @@ class Ldap
         private readonly string $ldap_pass,
         private readonly string $ldap_server,
         private readonly string $ldap_base_dn,
-    ) {
-    }
+    ) {}
 
     /**
      * Search for a user in the LDAP directory, returning the attributes for the first entry.

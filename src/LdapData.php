@@ -21,8 +21,7 @@ readonly class LdapData
         public ?array $affiliations,
         public ?array $previous_netids,
         public ?array $previous_emplids,
-    ) {
-    }
+    ) {}
 
     /**
      * Create a new LdapData object from an array of LDAP data.

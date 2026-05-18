@@ -8,13 +8,15 @@ use CornellCustomDev\LaravelLdap\LdapServiceException;
 use CornellCustomDev\LaravelLdap\Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use InvalidArgumentException;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\MockObject\Stub;
 
 class LdapServiceTest extends TestCase
 {
     use WithFaker;
 
-    public function testCanBuildService()
+    #[Test]
+    public function can_build_service()
     {
         $ldap = new Ldap(
             ldap_user: $this->faker->userName,
@@ -27,7 +29,8 @@ class LdapServiceTest extends TestCase
         $this->assertInstanceOf(LdapService::class, $service);
     }
 
-    public function testMakesSingletonService()
+    #[Test]
+    public function makes_singleton_service()
     {
         $service = LdapService::make();
         $this->assertInstanceOf(LdapService::class, $service);
@@ -36,7 +39,8 @@ class LdapServiceTest extends TestCase
         $this->assertEquals($service, app(LdapService::class));
     }
 
-    public function testGetRequiresNetid()
+    #[Test]
+    public function get_requires_netid()
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('get requires netid');
@@ -44,7 +48,8 @@ class LdapServiceTest extends TestCase
         LdapService::get(null);
     }
 
-    public function testFindWillCatchFailedConnection()
+    #[Test]
+    public function find_will_catch_failed_connection()
     {
         $ldap = $this->mockLdap(connection: false);
         $service = new LdapService($ldap);
@@ -55,7 +60,8 @@ class LdapServiceTest extends TestCase
         $service->find('netid');
     }
 
-    public function testFindWillCatchFailedBind()
+    #[Test]
+    public function find_will_catch_failed_bind()
     {
         $ldap = $this->mockLdap(bind: false);
         $service = new LdapService($ldap);
@@ -66,7 +72,8 @@ class LdapServiceTest extends TestCase
         $service->find('netid');
     }
 
-    public function testFindWillCatchErrorResult()
+    #[Test]
+    public function find_will_catch_error_result()
     {
         $error_message = 'TEST_ERROR';
         $ldap = $this->mockLdap(parse_result: $error_message);
@@ -78,7 +85,8 @@ class LdapServiceTest extends TestCase
         $service->find('netid');
     }
 
-    public function testFindWillCatchFailedSearch()
+    #[Test]
+    public function find_will_catch_failed_search()
     {
         $error_message = 'TEST_ERROR';
         $ldap = $this->mockLdap();
@@ -91,7 +99,8 @@ class LdapServiceTest extends TestCase
         $service->find('netid');
     }
 
-    public function testFindWillReturnNullIfNoResults()
+    #[Test]
+    public function find_will_return_null_if_no_results()
     {
         $ldap = $this->mockLdap();
         $service = new LdapService($ldap);
@@ -101,7 +110,8 @@ class LdapServiceTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function testFindWillReturnLdapData()
+    #[Test]
+    public function find_will_return_ldap_data()
     {
         $ldapResponse = $this->fixture('ldap_search.json', json: true);
 
@@ -130,8 +140,8 @@ class LdapServiceTest extends TestCase
         $bind = true,
         $parse_result = true,
         $getFirst = null,
-    ): Ldap|MockObject {
-        $ldap = $this->createMock(Ldap::class);
+    ): Ldap|Stub {
+        $ldap = $this->createStub(Ldap::class);
         $ldap->method('connect')->willReturn($connection);
         $ldap->method('bind')->willReturn($bind);
         $ldap->method('parse_result')->willReturn($parse_result);

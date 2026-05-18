@@ -14,8 +14,7 @@ class LdapService
     public function __construct(
         private readonly Ldap $ldap,
         private readonly int $cache_seconds = self::LDAP_CACHE_SECONDS,
-    ) {
-    }
+    ) {}
 
     /**
      * Retrieve the instance of LdapService from the service container.
