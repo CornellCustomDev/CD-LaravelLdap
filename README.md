@@ -56,8 +56,7 @@ ldap filter are not expensive.
 
 Documentation of all currently parsed fields can be found in [LdapData.php](src/LdapData.php).
 
-The value of this property matches the output of `LDAP::data($netid)`, but with the 'count' and 'count_values' 
-keys removed.
+---
 
 ## Additional LDAP Attributes
 
@@ -73,3 +72,6 @@ legacy `App\Helpers\LDAP` class that exists on many Cornell Laravel sites.
 ```php
 $ldapData = LdapSearch::getByNetid($netid)?->ldapData;
 ```
+
+The value of this property matches the output of `LDAP::data($netid)`, but with the 'count' and 'count_values'
+keys removed.
