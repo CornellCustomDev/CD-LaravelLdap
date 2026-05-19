@@ -2,40 +2,74 @@
 
 A Laravel package for retrieving Cornell University LDAP data.
 
-This package exists in order to provide a robust, well-tested LDAP connection service with a standard data structure that is well-defined and can be extended over time.
+This package provides two main classes:
+- [`LdapSearch`](src/LdapSearch.php): Handles LDAP queries and caching
+- [`LdapData`](src/LdapData.php): An immutable data object that encapsulates Cornell LDAP attributes in a well-defined structure
 
 ## Installation
-The package can be installed via composer once an initial release has been added to packagist:
-
 ```bash
 composer require cornell-custom-dev/laravel-ldap
+php artisan vendor:publish --tag=ldap-config
 ```
 
-After running composer require, the config file should be published:
-
-```bash
-php artisan vendor:publish --tag=laravel-ldap-config
+```dotenv
+# File: .env
+LDAP_USER=username
+LDAP_PASS=password
 ```
 
-Environment variables that define the LDAP user and password should be set in the environment. See `/resources/stubs/.env.ldap.stub`.
+See [`config/ldap.php`](config/ldap.php) for additional settings.
 
 ## Usage
 
-The service is registered automatically in the Laravel dependency injection container. It can be called statically and the service will be resolved from the container:
-
+### Single lookup
 ```php
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapSearch;
+
 try {
-  $ldapData = LdapService::get($netid);
-  $display_name = $ldapData->display_name;
-} catch (LdapServiceException $e) {
-  ...
+  $ldapData = LdapSearch::getByNetid($netid);
+  $displayName = $ldapData->name();
+} catch (LdapDataException $e) {
+  // Handle exceptions
 }
 ```
 
-The `LdapService::get()` method caches the query for 300 seconds by default, so multiple calls to the service for the same `$netid` value are not expensive.
+### Collection of search results
+```php
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapSearch;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapData;
 
-Documentation of all currently parsed fields can be found in `src/LdapData.php`.
+try {
+    $searchFilter = "(|(uid=$this->search*)(displayname=*$this->search*)(mail=$this->search*))";
+    return LdapSearch::search($searchFilter)
+        ?->mapWithKeys(fn (LdapData $ldapData) => [
+            'name'  => $ldapData->name(),
+            'email' => $ldapData->email(),
+        ]);
+} catch (LdapDataException $e) {
+  // Handle exceptions
+}
+```
 
-## Contributing
+LdapSearch caches queries for a configurable duration (default 300 seconds), so multiple calls for the same 
+ldap filter are not expensive.
 
-Anyone on the Custom Development team should be welcome and able to contribute. See [CONTRIBUTING](CONTRIBUTING.md) for details on how be involved and provide quality contributions.
+Documentation of all currently parsed fields can be found in [LdapData.php](src/LdapData.php).
+
+The value of this property matches the output of `LDAP::data($netid)`, but with the 'count' and 'count_values' 
+keys removed.
+
+## Additional LDAP Attributes
+
+`LdapSearch::getByNetid($netid)->returnedData` is an array of all LDAP attributes returned, keyed by attribute 
+name. The set of attributes is a subset of the attributes documented at 
+https://confluence.cornell.edu/pages/viewpage.action?spaceKey=IDM&title=Attributes.
+
+## Legacy Compatibility
+
+[LdapData](src/LdapData.php) has a property to provide compatibility with the `LDAP::data()` method from the
+legacy `App\Helpers\LDAP` class that exists on many Cornell Laravel sites.
+
+```php
+$ldapData = LdapSearch::getByNetid($netid)?->ldapData;
+```

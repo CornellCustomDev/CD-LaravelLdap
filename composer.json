@@ -6,12 +6,12 @@
     "require": {
         "php": "^8.3",
         "ext-ldap": "*",
-        "illuminate/support": "^12.0",
-        "spatie/laravel-package-tools": "^1.93"
+        "illuminate/support": "^12.0"
     },
     "require-dev": {
         "laravel/pint": "^1.29",
         "orchestra/testbench": "^10.11",
+        "php-mock/php-mock-phpunit": "^2.15",
         "phpunit/phpunit": "^12.5"
     },
     "autoload": {
