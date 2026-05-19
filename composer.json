@@ -44,7 +44,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "LdapDataServiceProvider"
+                "CornellCustomDev\\LaravelStarterKit\\Ldap\\LdapDataServiceProvider"
             ]
         }
     },
