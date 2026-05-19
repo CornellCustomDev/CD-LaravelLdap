@@ -11,9 +11,9 @@ jobs:
         stability: [prefer-stable]
         include:
           - laravel: 12.*
-            testbench: "^10.*"
+            testbench: "^10.0"
           - laravel: 13.*
-            testbench: "^11.*"
+            testbench: "^11.0"
         exclude:
           - php: 8.3
             laravel: 13.*
