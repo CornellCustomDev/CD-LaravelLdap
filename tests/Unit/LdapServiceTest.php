@@ -125,6 +125,18 @@ class LdapServiceTest extends TestCase
     }
 
     #[Test]
+    public function cornell_service_without_ldap_user_throws_ldap_data_exception()
+    {
+        config(['ldap.user' => '']);
+        $this->app->forgetInstance(LdapService::class);
+
+        $this->expectException(LdapDataException::class);
+        $this->expectExceptionMessage('LDAP bind credentials are not configured.');
+
+        LdapSearch::getByNetid('tt999', bustCache: true);
+    }
+
+    #[Test]
     public function service_without_credentials_throws_even_when_the_cache_is_warm()
     {
         $this->mockLdap(entries: ['count' => 1, $this->fixture('ldap_weill.json', json: true)]);

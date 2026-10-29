@@ -19,7 +19,7 @@ class LdapDataServiceProvider extends ServiceProvider
             abstract: LdapService::class,
             concrete: fn () => new LdapService(
                 server: config('ldap.server'),
-                user: 'uid='.config('ldap.user').',ou=Directory Administrators,o=Cornell University,c=US',
+                user: config('ldap.user') ? 'uid='.config('ldap.user').',ou=Directory Administrators,o=Cornell University,c=US' : '',
                 pass: config('ldap.pass'),
                 baseDn: config('ldap.base_dn'),
             ),
