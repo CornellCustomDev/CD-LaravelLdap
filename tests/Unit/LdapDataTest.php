@@ -3,7 +3,7 @@
 namespace CornellCustomDev\LaravelStarterKit\Ldap\Tests\Unit;
 
 use CornellCustomDev\LaravelStarterKit\Ldap\LdapData;
-use CornellCustomDev\LaravelStarterKit\Ldap\LdapSearch;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapService;
 use CornellCustomDev\LaravelStarterKit\Ldap\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -14,7 +14,7 @@ class LdapDataTest extends TestCase
     {
         $ldapResponse = $this->fixture('ldap_search.json', json: true);
 
-        $ldapData = LdapSearch::parseEntry($ldapResponse);
+        $ldapData = LdapService::parseEntry($ldapResponse);
         $result = LdapData::make($ldapData);
 
         $this->assertEquals('tt999', $result->uid);
@@ -38,7 +38,7 @@ class LdapDataTest extends TestCase
     {
         $ldapResponse = $this->fixture('ldap_ferpa.json', json: true);
 
-        $ldapData = LdapSearch::parseEntry($ldapResponse);
+        $ldapData = LdapService::parseEntry($ldapResponse);
         $result = LdapData::make($ldapData);
 
         $this->assertEquals('tt999', $result->uid);
@@ -53,5 +53,21 @@ class LdapDataTest extends TestCase
         $this->assertEquals(null, $result->workingTitle);
         $this->assertEquals('student', $result->primaryAffiliation);
         $this->assertEquals(['alumni', 'student'], $result->affiliations);
+    }
+
+    #[Test]
+    public function academic_colleges_and_lowercase_given_name_are_parsed()
+    {
+        $result = LdapData::make([
+            'uid' => 'tt999',
+            'givenname' => 'Testy',
+            'sn' => 'Testerson',
+            'cornelleduprimaryaffiliation' => 'student',
+            'cornelleduacadcollege' => ['GR', 'LA'],
+        ]);
+
+        $this->assertEquals('Testy', $result->firstName);
+        $this->assertEquals(['GR', 'LA'], $result->academicColleges);
+        $this->assertEquals('cornell.edu', $result->domain);
     }
 }
