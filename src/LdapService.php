@@ -114,9 +114,15 @@ class LdapService
         if (empty(trim($filter))) {
             throw new InvalidArgumentException('LdapService::search requires a search term');
         }
+        if (empty($this->user) || empty($this->pass)) {
+            throw new LdapDataException('LDAP bind credentials are not configured.');
+        }
         $attributes ??= $this->attributes;
 
-        $cacheKey = 'LdapService::search_'.md5(json_encode([$this->server, $filter, $attributes]));
+        // Key on everything that shapes the result
+        $cacheKey = 'LdapService::search_'.md5(json_encode([
+            $this->server, $this->baseDn, $filter, $attributes,
+        ]));
         if ($bustCache) {
             Cache::forget($cacheKey);
         }
@@ -146,10 +152,6 @@ class LdapService
     private function performSearch(string $filter, array $attributes): ?Collection
     {
         try {
-            if (empty($this->user) || empty($this->pass)) {
-                throw new LdapDataException('LDAP bind credentials are not configured.');
-            }
-
             $connection = ldap_connect($this->server);
             if (! $connection) {
                 throw new LdapDataException('Could not connect to LDAP server.');

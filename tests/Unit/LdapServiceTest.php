@@ -115,12 +115,25 @@ class LdapServiceTest extends TestCase
     #[Test]
     public function searches_with_different_attributes_are_cached_separately()
     {
-        $this->mockLdap(entries: ['count' => 0], times: 2);
+        // A null result is never cached, so the first search must return an entry for the cache to matter
+        $this->mockLdap(entries: ['count' => 1, $this->fixture('ldap_search.json', json: true)], times: 2);
 
         LdapSearch::search('(uid=tt999)', bustCache: true);
         LdapSearch::search('(uid=tt999)', attributes: ['uid', 'cornelleduacadcollege']);
 
         $this->assertEquals(['uid', 'cornelleduacadcollege'], $this->calls['ldap_search'][3]);
+    }
+
+    #[Test]
+    public function service_without_credentials_throws_even_when_the_cache_is_warm()
+    {
+        $this->mockLdap(entries: ['count' => 1, $this->fixture('ldap_weill.json', json: true)]);
+        $this->weill()->getById('abc2001', bustCache: true);
+
+        $this->expectException(LdapDataException::class);
+        $this->expectExceptionMessage('LDAP bind credentials are not configured.');
+
+        $this->weill(pass: '')->getById('abc2001');
     }
 
     private function mockLdap(array $entries, int $times = 1): void
