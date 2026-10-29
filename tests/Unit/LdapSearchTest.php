@@ -19,7 +19,7 @@ class LdapSearchTest extends TestCase
     public function get_by_netid_requires_netid()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('getByNetid requires a search term');
+        $this->expectExceptionMessage('getById requires a search term');
 
         LdapSearch::getByNetid(' ', bustCache: true);
     }

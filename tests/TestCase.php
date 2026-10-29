@@ -23,7 +23,8 @@ abstract class TestCase extends OrchestraTestCase
 
     protected function getEnvironmentSetUp($app)
     {
-        // perform environment setup
+        $app['config']->set('ldap.user', 'test');
+        $app['config']->set('ldap.pass', 'secret');
     }
 
     public function fixture(string $name, bool $json = false): array|string

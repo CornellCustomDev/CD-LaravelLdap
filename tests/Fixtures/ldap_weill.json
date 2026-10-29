@@ -1,0 +1,34 @@
+{
+  "weillcornelleducwid": {
+    "count": 1,
+    "0": "abc2001"
+  },
+  "0": "weillcornelleducwid",
+  "uid": {
+    "count": 1,
+    "0": "wew2001"
+  },
+  "5": "uid",
+  "givenname": {
+    "count": 1,
+    "0": "Wendy"
+  },
+  "1": "givenname",
+  "sn": {
+    "count": 1,
+    "0": "Weillerson"
+  },
+  "2": "sn",
+  "mail": {
+    "count": 1,
+    "0": "wew2001@med.cornell.edu"
+  },
+  "3": "mail",
+  "cornelleduemplid": {
+    "count": 1,
+    "0": "8888888"
+  },
+  "4": "cornelleduemplid",
+  "count": 6,
+  "dn": "weillCornellEduCWID=abc2001,ou=people,dc=weill,dc=cornell,dc=edu"
+}
