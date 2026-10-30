@@ -134,24 +134,20 @@ class LdapData
         return $this->principalName;
     }
 
+    /**
+     * Returns the primary email (netid@cornell.edu or cwid@med.cornell.edu).
+     */
     public function primaryEmail(): string
     {
         return $this->principalName;
     }
 
+    /**
+     * Returns the mail attribute, which may be an alias of the primary email.
+     */
     public function emailAlias(): ?string
     {
         return $this->email;
-    }
-
-    /**
-     * Returns the primary email (netid@cornell.edu|cwid@med.cornell.edu) if available, otherwise the alias email.
-     *
-     * @deprecated Use of email() should be replaced with primaryEmail() or emailAlias(), as appropriate.
-     */
-    public function email(): string
-    {
-        return $this->primaryEmail() ?: $this->emailAlias();
     }
 
     /**

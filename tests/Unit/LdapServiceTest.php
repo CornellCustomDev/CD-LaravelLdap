@@ -69,7 +69,7 @@ class LdapServiceTest extends TestCase
         $this->assertEquals('Wendy', $result->firstName);
         $this->assertEquals('Weillerson', $result->lastName);
         $this->assertEquals('Wendy Weillerson', $result->name());
-        $this->assertEquals('wew2001@med.cornell.edu', $result->email());
+        $this->assertEquals('wew2001@med.cornell.edu', $result->primaryEmail());
         $this->assertEquals('abc2001', $result->returnedData['weillcornelleducwid']);
         $this->assertEquals('wew2001', $result->ldapData['netid']);
     }
