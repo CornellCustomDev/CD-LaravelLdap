@@ -162,6 +162,11 @@ class LdapService
             ldap_set_option($connection, LDAP_OPT_SIZELIMIT, 1000);
             ldap_set_option($connection, LDAP_OPT_TIMELIMIT, 3);
 
+            // ldap_connect() doesn't open a socket, so without these an unreachable server
+            // hangs the bind until the OS gives up on the TCP connection
+            ldap_set_option($connection, LDAP_OPT_NETWORK_TIMEOUT, 5);
+            ldap_set_option($connection, LDAP_OPT_TIMEOUT, 5);
+
             // Bind to the LDAP server
             $result = ldap_bind_ext($connection, $this->user, $this->pass);
             if ($result === false) {
