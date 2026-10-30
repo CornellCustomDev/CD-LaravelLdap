@@ -110,7 +110,8 @@ class LdapSearchTest extends TestCase
         $this->assertEquals('Testy', $result->firstName);
         $this->assertEquals('Testerson', $result->lastName);
         $this->assertEquals('Testy Testerson', $result->name());
-        $this->assertEquals('testerson@cornell.edu', $result->email());
+        $this->assertEquals('tt999@cornell.edu', $result->primaryEmail());
+        $this->assertEquals('testerson@cornell.edu', $result->emailAlias());
         $this->assertEquals('607/2551111', $result->campusPhone);
         $this->assertEquals('CIO - CIT Enterprise Services', $result->deptName);
         $this->assertEquals('Web Developer', $result->workingTitle);

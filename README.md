@@ -46,7 +46,7 @@ try {
     return app('ldap.cornell')->search($searchFilter)
         ?->mapWithKeys(fn (LdapData $ldapData) => [
             'name'  => $ldapData->name(),
-            'email' => $ldapData->email(),
+            'email' => $ldapData->primaryEmail(),
         ]);
 } catch (LdapDataException $e) {
     // Handle exceptions
