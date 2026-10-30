@@ -20,6 +20,16 @@ class LdapServiceTest extends TestCase
      */
     private array $calls = [];
 
+    /**
+     * Values passed to the mocked ldap_set_option(), keyed by option.
+     */
+    private array $options = [];
+
+    /**
+     * The options that had been set when ldap_bind_ext() was called.
+     */
+    private array $optionsAtBind = [];
+
     private function weill(string $user = 'cn=test,ou=binds,dc=weill,dc=cornell,dc=edu', string $pass = 'secret'): LdapService
     {
         return new LdapService(
@@ -148,6 +158,17 @@ class LdapServiceTest extends TestCase
         $this->weill(pass: '')->getById('abc2001');
     }
 
+    #[Test]
+    public function connect_and_operation_timeouts_are_set_before_binding()
+    {
+        $this->mockLdap(entries: ['count' => 0]);
+
+        $this->weill()->getById('abc2001', bustCache: true);
+
+        $this->assertSame(5, $this->optionsAtBind[LDAP_OPT_NETWORK_TIMEOUT] ?? null);
+        $this->assertSame(5, $this->optionsAtBind[LDAP_OPT_TIMEOUT] ?? null);
+    }
+
     private function mockLdap(array $entries, int $times = 1): void
     {
         $namespace = 'CornellCustomDev\LaravelStarterKit\Ldap';
@@ -160,11 +181,20 @@ class LdapServiceTest extends TestCase
         $this->getFunctionMock($namespace, 'ldap_connect')
             ->expects($this->exactly($times))->willReturnCallback($record('ldap_connect', true));
         $this->getFunctionMock($namespace, 'ldap_set_option')
-            ->expects($this->atLeastOnce());
+            ->expects($this->atLeastOnce())->willReturnCallback(function ($connection, $option, $value) {
+                $this->options[$option] = $value;
+
+                return true;
+            });
         $this->getFunctionMock($namespace, 'ldap_close')
             ->expects($this->exactly($times));
         $this->getFunctionMock($namespace, 'ldap_bind_ext')
-            ->expects($this->exactly($times))->willReturnCallback($record('ldap_bind_ext', true));
+            ->expects($this->exactly($times))->willReturnCallback(function (...$args) {
+                $this->calls['ldap_bind_ext'] = $args;
+                $this->optionsAtBind = $this->options;
+
+                return true;
+            });
         $this->getFunctionMock($namespace, 'ldap_parse_result')
             ->expects($this->exactly($times))->willReturn(true);
         $this->getFunctionMock($namespace, 'ldap_search')
