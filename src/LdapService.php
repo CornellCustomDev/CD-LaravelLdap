@@ -174,11 +174,15 @@ class LdapService
                 throw new LdapDataException("Could not bind to LDAP server: $error_message");
             }
 
-            // Confirm that the bind was successful
-            $parsed_result = ldap_parse_result($connection, $result, $error_code, $matched_dn,
-                $error_message) ?: $error_message;
-            if ($parsed_result !== true) {
-                throw new LdapDataException("Error response from ldap_bind: $parsed_result");
+            // Confirm that the bind was successful. ldap_parse_result() returns true whenever the
+            // response parses, so a rejected bind (e.g., 49 Invalid credentials) shows up only in $error_code.
+            if (! ldap_parse_result($connection, $result, $error_code, $matched_dn, $error_message)) {
+                $error_message = ldap_error($connection);
+                throw new LdapDataException("Could not parse the response from ldap_bind: $error_message");
+            }
+            if ($error_code) {
+                $error_detail = ldap_err2str($error_code).($error_message ? " ($error_message)" : '');
+                throw new LdapDataException("Error response from ldap_bind: $error_detail");
             }
 
             // Perform the LDAP search

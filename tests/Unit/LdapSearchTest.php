@@ -67,13 +67,40 @@ class LdapSearchTest extends TestCase
     }
 
     #[Test]
-    public function find_will_catch_error_result()
+    public function find_will_catch_unparseable_bind_result()
     {
-        $error_message = 'TEST_ERROR';
-        $this->mockLdap(parse_result: $error_message);
+        $this->mockLdap(parse_result: false);
+        $this->getFunctionMock('CornellCustomDev\LaravelStarterKit\Ldap', 'ldap_error')
+            ->expects($this->once())->willReturn('Decoding error');
 
         $this->expectException(LdapDataException::class);
-        $this->expectExceptionMessage("Error response from ldap_bind: $error_message");
+        $this->expectExceptionMessage('Could not parse the response from ldap_bind: Decoding error');
+
+        LdapSearch::search('netid', bustCache: true);
+    }
+
+    #[Test]
+    public function find_will_catch_rejected_bind()
+    {
+        $diagnostic = '80090308: LdapErr: DSID-0C09041C, comment: AcceptSecurityContext error, data 52e, v4563';
+        $this->mockLdap(bind_error_code: 49, bind_error_message: $diagnostic);
+
+        try {
+            LdapSearch::search('netid', bustCache: true);
+            $this->fail('Expected a rejected bind to throw LdapDataException.');
+        } catch (LdapDataException $e) {
+            $this->assertSame("Error response from ldap_bind: Invalid credentials ($diagnostic)", $e->getMessage());
+            $this->assertStringNotContainsString(config('ldap.pass'), $e->getMessage());
+        }
+    }
+
+    #[Test]
+    public function find_will_catch_rejected_bind_without_diagnostic()
+    {
+        $this->mockLdap(bind_error_code: 49);
+
+        $this->expectException(LdapDataException::class);
+        $this->expectExceptionMessage('Error response from ldap_bind: Invalid credentials');
 
         LdapSearch::search('netid', bustCache: true);
     }
@@ -127,6 +154,8 @@ class LdapSearchTest extends TestCase
         $connection = true,
         $bind = true,
         $parse_result = true,
+        $bind_error_code = 0,
+        $bind_error_message = '',
         $search_result = [],
         $entries = [],
     ): void {
@@ -149,8 +178,14 @@ class LdapSearchTest extends TestCase
         }
 
         $ldap_connect = $this->getFunctionMock('CornellCustomDev\LaravelStarterKit\Ldap', 'ldap_parse_result');
-        $ldap_connect->expects($this->once())->willReturn($parse_result);
-        if ($parse_result !== true) {
+        $ldap_connect->expects($this->once())->willReturnCallback(
+            function ($connection, $result, &$error_code, &$matched_dn, &$error_message) use ($parse_result, $bind_error_code, $bind_error_message) {
+                $error_code = $bind_error_code;
+                $error_message = $bind_error_message;
+
+                return $parse_result;
+            });
+        if ($parse_result !== true || $bind_error_code !== 0) {
             return;
         }
 

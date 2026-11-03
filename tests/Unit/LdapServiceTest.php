@@ -196,7 +196,11 @@ class LdapServiceTest extends TestCase
                 return true;
             });
         $this->getFunctionMock($namespace, 'ldap_parse_result')
-            ->expects($this->exactly($times))->willReturn(true);
+            ->expects($this->exactly($times))->willReturnCallback(function ($connection, $result, &$error_code) {
+                $error_code = 0;
+
+                return true;
+            });
         $this->getFunctionMock($namespace, 'ldap_search')
             ->expects($this->exactly($times))->willReturnCallback($record('ldap_search', []));
         $this->getFunctionMock($namespace, 'ldap_get_entries')
