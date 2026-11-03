@@ -57,9 +57,11 @@ class LdapSearchTest extends TestCase
     public function find_will_catch_failed_bind()
     {
         $this->mockLdap(bind: false);
+        $this->getFunctionMock('CornellCustomDev\LaravelStarterKit\Ldap', 'ldap_error')
+            ->expects($this->once())->willReturn("Can't contact LDAP server");
 
         $this->expectException(LdapDataException::class);
-        $this->expectExceptionMessage('Could not bind to LDAP server.');
+        $this->expectExceptionMessage("Could not bind to LDAP server: Can't contact LDAP server");
 
         LdapSearch::search('netid', bustCache: true);
     }

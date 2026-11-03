@@ -170,7 +170,8 @@ class LdapService
             // Bind to the LDAP server
             $result = ldap_bind_ext($connection, $this->user, $this->pass);
             if ($result === false) {
-                throw new LdapDataException('Could not bind to LDAP server.');
+                $error_message = ldap_error($connection);
+                throw new LdapDataException("Could not bind to LDAP server: $error_message");
             }
 
             // Confirm that the bind was successful
