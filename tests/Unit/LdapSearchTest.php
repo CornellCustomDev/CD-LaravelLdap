@@ -4,8 +4,10 @@ namespace CornellCustomDev\LaravelStarterKit\Ldap\Tests\Unit;
 
 use CornellCustomDev\LaravelStarterKit\Ldap\LdapDataException;
 use CornellCustomDev\LaravelStarterKit\Ldap\LdapSearch;
+use CornellCustomDev\LaravelStarterKit\Ldap\LdapService;
 use CornellCustomDev\LaravelStarterKit\Ldap\Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\Attributes\Test;
@@ -84,20 +86,27 @@ class LdapSearchTest extends TestCase
     {
         $diagnostic = '80090308: LdapErr: DSID-0C09041C, comment: AcceptSecurityContext error, data 52e, v4563';
         $this->mockLdap(bind_error_code: 49, bind_error_message: $diagnostic);
+        Log::shouldReceive('debug')->never();
 
         try {
             LdapSearch::search('netid', bustCache: true);
             $this->fail('Expected a rejected bind to throw LdapDataException.');
         } catch (LdapDataException $e) {
-            $this->assertSame("Error response from ldap_bind: Invalid credentials ($diagnostic)", $e->getMessage());
+            $this->assertSame('Error response from ldap_bind: Invalid credentials', $e->getMessage());
             $this->assertStringNotContainsString(config('ldap.pass'), $e->getMessage());
         }
     }
 
     #[Test]
-    public function find_will_catch_rejected_bind_without_diagnostic()
+    public function find_will_log_rejected_bind_diagnostic_when_debugging()
     {
-        $this->mockLdap(bind_error_code: 49);
+        config(['ldap.debug' => true]);
+        $diagnostic = '8009030C: LdapErr: DSID-0C090534, comment: AcceptSecurityContext error, data 2030, v4f7c';
+        $this->mockLdap(bind_error_code: 49, bind_error_message: $diagnostic);
+        Log::shouldReceive('debug')->once()->with('LDAP bind rejected', [
+            'server' => app(LdapService::class)->server,
+            'diagnostic' => $diagnostic,
+        ]);
 
         $this->expectException(LdapDataException::class);
         $this->expectExceptionMessage('Error response from ldap_bind: Invalid credentials');

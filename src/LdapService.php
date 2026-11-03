@@ -181,8 +181,12 @@ class LdapService
                 throw new LdapDataException("Could not parse the response from ldap_bind: $error_message");
             }
             if ($error_code) {
-                $error_detail = ldap_err2str($error_code).($error_message ? " ($error_message)" : '');
-                throw new LdapDataException("Error response from ldap_bind: $error_detail");
+                // The server's diagnostic (e.g., AD's "data 52e" vs. "data 2030") tells a bad password
+                // from a bad bind DN, but is too noisy for the exception
+                if (config('ldap.debug')) {
+                    Log::debug('LDAP bind rejected', ['server' => $this->server, 'diagnostic' => $error_message]);
+                }
+                throw new LdapDataException('Error response from ldap_bind: '.ldap_err2str($error_code));
             }
 
             // Perform the LDAP search
